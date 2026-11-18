@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "polymer2angular"
+version = "0.1.0"
+description = "LangGraph multi-agent application that migrates Polymer (1.x/2.x/3.x) apps to Angular 21"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+dependencies = [
+    "langgraph>=1.0",
+    "langchain>=1.0",
+    "langchain-core>=1.0",
+    "pydantic>=2.7",
+]
+
+[project.optional-dependencies]
+openai = ["langchain-openai>=1.0"]
+azure = ["langchain-openai>=1.0"]
+anthropic = ["langchain-anthropic>=1.0"]
+ollama = ["langchain-ollama>=1.0"]
+google = ["langchain-google-genai>=3.0"]
+dev = ["pytest>=8", "pyflakes>=3"]
+
+[project.scripts]
+polymer2angular = "polymer2angular.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["polymer2angular*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]

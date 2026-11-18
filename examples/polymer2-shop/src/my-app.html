@@ -1,0 +1,107 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="my-products.html">
+<link rel="import" href="my-cart.html">
+<link rel="import" href="my-view404.html">
+
+<dom-module id="my-app">
+  <template>
+    <style include="shared-styles">
+      :host {
+        --app-header-color: #fff;
+        display: block;
+      }
+      header {
+        @apply --layout-horizontal;
+        background-color: var(--app-primary-color);
+        color: var(--app-header-color);
+        padding: 8px 16px;
+      }
+      nav a {
+        color: inherit;
+        margin-right: 12px;
+      }
+      nav a[active] {
+        font-weight: bold;
+      }
+    </style>
+
+    <app-location route="{{route}}"></app-location>
+    <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+
+    <header>
+      <img src="images/logo.svg" alt="logo">
+      <span class="title">[[appTitle]]</span>
+      <nav>
+        <a href="[[rootPath]]products" active$="[[_isActive(page, 'products')]]">Products</a>
+        <a href="[[rootPath]]cart">Cart ([[cartItems.length]])</a>
+      </nav>
+    </header>
+
+    <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
+      <my-products name="products" on-add-to-cart="_onAddToCart"></my-products>
+      <my-cart name="cart" items="{{cartItems}}"></my-cart>
+      <my-view404 name="view404"></my-view404>
+    </iron-pages>
+  </template>
+
+  <script>
+    class MyApp extends Polymer.Element {
+      static get is() { return 'my-app'; }
+
+      static get properties() {
+        return {
+          appTitle: {
+            type: String,
+            value: 'Polymer Shop'
+          },
+          page: {
+            type: String,
+            reflectToAttribute: true,
+            observer: '_pageChanged'
+          },
+          cartItems: {
+            type: Array,
+            value: function() { return []; }
+          },
+          routeData: Object,
+          subroute: String,
+          rootPath: String
+        };
+      }
+
+      static get observers() {
+        return [
+          '_routePageChanged(routeData.page)'
+        ];
+      }
+
+      _routePageChanged(page) {
+        this.page = page || 'products';
+      }
+
+      _pageChanged(page) {
+        const resolvedPageUrl = this.resolveUrl('my-' + page + '.html');
+        Polymer.importHref(resolvedPageUrl, null, this._showPage404.bind(this), true);
+      }
+
+      _showPage404() {
+        this.page = 'view404';
+      }
+
+      _isActive(page, name) {
+        return page === name;
+      }
+
+      _onAddToCart(e) {
+        this.push('cartItems', e.detail);
+        console.log('Cart size', this.cartItems.length);
+      }
+    }
+
+    window.customElements.define(MyApp.is, MyApp);
+  </script>
+</dom-module>

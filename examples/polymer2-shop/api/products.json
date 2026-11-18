@@ -1,0 +1,5 @@
+[
+  {"name": "Polymer T-Shirt", "price": 19.5, "available": true},
+  {"name": "Angular Mug", "price": 12, "available": true},
+  {"name": "Web Components Hoodie", "price": 49, "available": false}
+]

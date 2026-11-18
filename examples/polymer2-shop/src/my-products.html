@@ -1,0 +1,103 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="behaviors/format-behavior.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-products">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+      .product {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+      }
+      .product[sold-out] {
+        opacity: 0.5;
+      }
+    </style>
+
+    <iron-ajax id="ajax" auto url="/api/products.json?category=[[category]]" handle-as="json"
+               last-response="{{products}}" loading="{{loading}}" on-response="_onResponse"></iron-ajax>
+
+    <div class="card">
+      <h1>Products ([[count]])</h1>
+      <paper-input label="Filter" value="{{filter}}"></paper-input>
+      <input id="search" placeholder="Search" value="{{query::input}}">
+
+      <template is="dom-if" if="[[loading]]">
+        <p>Loading...</p>
+      </template>
+
+      <template is="dom-repeat" items="[[products]]" as="product" filter="_matches" index-as="i">
+        <div class="product" sold-out$="[[!product.available]]">
+          <span>[[i]]. [[product.name]]</span>
+          <span>[[formatPrice(product.price)]]</span>
+          <paper-button raised on-tap="_addToCart" disabled="[[!product.available]]">Add</paper-button>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <script>
+    class MyProducts extends Polymer.mixinBehaviors([MyApp.FormatBehavior], Polymer.Element) {
+      static get is() { return 'my-products'; }
+
+      static get properties() {
+        return {
+          category: {
+            type: String,
+            value: 'all'
+          },
+          products: {
+            type: Array,
+            value: () => []
+          },
+          loading: Boolean,
+          filter: {
+            type: String,
+            value: ''
+          },
+          query: String,
+          count: {
+            type: Number,
+            computed: '_count(products)'
+          }
+        };
+      }
+
+      ready() {
+        super.ready();
+        this.$.search.focus();
+      }
+
+      _count(products) {
+        return products ? products.length : 0;
+      }
+
+      _matches(product) {
+        const term = (this.filter || this.query || '').toLowerCase();
+        return !term || product.name.toLowerCase().indexOf(term) !== -1;
+      }
+
+      _onResponse(e) {
+        console.log('Loaded products', e.detail.response);
+      }
+
+      _addToCart(e) {
+        const product = e.model.product;
+        this.dispatchEvent(new CustomEvent('add-to-cart', {detail: product, bubbles: true, composed: true}));
+      }
+
+      refresh() {
+        this.$.ajax.generateRequest();
+      }
+    }
+
+    customElements.define(MyProducts.is, MyProducts);
+  </script>
+</dom-module>

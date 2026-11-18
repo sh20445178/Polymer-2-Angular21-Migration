@@ -1,0 +1,17 @@
+<script>
+  window.MyApp = window.MyApp || {};
+
+  /** Shared price formatting behavior. */
+  MyApp.FormatBehavior = {
+    properties: {
+      currency: {
+        type: String,
+        value: 'USD'
+      }
+    },
+
+    formatPrice: function(value) {
+      return new Intl.NumberFormat('en-US', {style: 'currency', currency: this.currency}).format(value || 0);
+    }
+  };
+</script>

@@ -1,0 +1,78 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="behaviors/format-behavior.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-cart">
+  <template>
+    <style include="shared-styles">
+      :host { display: block; }
+      .row { display: flex; gap: 12px; }
+      ::slotted(.note) { font-style: italic; }
+    </style>
+
+    <div class="card">
+      <h1>Your cart</h1>
+      <p id="emptyMsg" hidden$="[[items.length]]">Your cart is empty.</p>
+      <template is="dom-repeat" items="{{items}}">
+        <div class="row">
+          <span>[[item.name]]</span>
+          <span>[[formatPrice(item.price)]]</span>
+          <button on-tap="_remove">Remove</button>
+        </div>
+      </template>
+      <p>Total: <strong>[[formatPrice(total)]]</strong></p>
+      <button on-click="clear" disabled="[[!items.length]]">Clear cart</button>
+      <content select=".note"></content>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'my-cart',
+
+      behaviors: [MyApp.FormatBehavior],
+
+      properties: {
+        items: {
+          type: Array,
+          notify: true,
+          value: function() { return []; }
+        },
+        total: {
+          type: Number,
+          computed: '_total(items.*)'
+        }
+      },
+
+      listeners: {
+        'keydown': '_onKeyDown'
+      },
+
+      attached: function() {
+        this.async(function() {
+          console.log('cart attached with', this.items.length, 'items');
+        }, 100);
+      },
+
+      _total: function(change) {
+        return this.items.reduce(function(sum, item) { return sum + item.price; }, 0);
+      },
+
+      _remove: function(e) {
+        this.splice('items', e.model.index, 1);
+        this.fire('cart-changed', {count: this.items.length});
+      },
+
+      _onKeyDown: function(e) {
+        if (e.key === 'Escape') {
+          this.clear();
+        }
+      },
+
+      clear: function() {
+        this.items = [];
+        this.$.emptyMsg.focus();
+      }
+    });
+  </script>
+</dom-module>
